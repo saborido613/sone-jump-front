@@ -1,7 +1,18 @@
-// import { useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
+import { useState } from "react";
 
 export default function Login() {
-  //   const navigate = useNavigate();
+  const navigate = useNavigate();
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const handleLogin = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (email !== "" && password !== "") {
+      navigate("/quiz");
+    } else {
+      alert("Por favor, preencha todos os campos!");
+    }
+  };
 
   return (
     <div className="flex flex-col min-h-screen bg-black text-white relative overflow-hidden">
@@ -11,8 +22,6 @@ export default function Login() {
       <div className="absolute -bottom-24 -right-24 w-96 h-96 bg-purple-900/20 rounded-full blur-[120px] pointer-events-none" />
 
       <div className="relative z-10 flex flex-col min-h-screen">
-
-
         <main className="flex-grow flex items-center justify-center px-6 py-20">
           <div className="max-w-6xl w-full grid grid-cols-1 md:grid-cols-2 gap-16 items-center">
             <div className="space-y-6">
@@ -46,11 +55,13 @@ export default function Login() {
               <form className="space-y-6">
                 <div className="space-y-2">
                   <label className="text-xs font-bold uppercase tracking-widest text-zinc-400">
-                    E-mail
+                    Usuário
                   </label>
                   <input
+                    onChange={(e) => setEmail(e.target.value)}
+                    value={email}
                     type="email"
-                    placeholder="seu@email.com"
+                    placeholder="Usuario"
                     className="w-full bg-zinc-950 border border-zinc-800 rounded-xl px-4 py-4 outline-none focus:border-purple-500 focus:ring-1 focus:ring-purple-500 transition-all"
                   />
                 </div>
@@ -60,6 +71,8 @@ export default function Login() {
                     Senha
                   </label>
                   <input
+                    onChange={(e) => setPassword(e.target.value)}
+                    value={password}
                     type="password"
                     placeholder="Sua senha"
                     className="w-full bg-zinc-950 border border-zinc-800 rounded-xl px-4 py-4 outline-none focus:border-purple-500 focus:ring-1 focus:ring-purple-500 transition-all"
@@ -67,6 +80,7 @@ export default function Login() {
                 </div>
 
                 <button
+                  onClick={handleLogin}
                   type="button"
                   className="w-full bg-gradient-to-r from-purple-600 to-purple-700 hover:from-purple-500 hover:to-purple-600 text-white font-bold py-4 rounded-xl shadow-lg shadow-purple-900/20 transition-all active:scale-95 uppercase tracking-widest text-sm"
                 >
@@ -76,12 +90,14 @@ export default function Login() {
                 <div className="flex justify-between items-center text-sm pt-4">
                   <button
                     type="button"
+                    onClick={() => navigate("/register")}
                     className="text-purple-400 hover:text-purple-300 transition-colors"
                   >
                     Criar conta
                   </button>
                   <button
                     type="button"
+                    onClick={() => navigate("/forgot-password")}
                     className="text-zinc-500 hover:text-zinc-300 transition-colors"
                   >
                     Esqueci minha senha
