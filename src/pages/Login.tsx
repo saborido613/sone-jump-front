@@ -1,16 +1,32 @@
 import { useNavigate } from "react-router-dom";
 import { useState } from "react";
+import { login as loginUser } from "../services/login/login";
 
 export default function Login() {
   const navigate = useNavigate();
-  const [email, setEmail] = useState("");
+  const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
-  const handleLogin = (e: React.FormEvent) => {
+  const [isLoading, setIsLoading] = useState(false);
+  const [errorMessage, setErrorMessage] = useState("");
+
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (email !== "" && password !== "") {
+    setErrorMessage("");
+
+    if (!username || !password) {
+      setErrorMessage("Preencha todos os campos.");
+      return;
+    }
+
+    try {
+      setIsLoading(true);
+      await loginUser({ username, password });
       navigate("/quiz");
-    } else {
-      alert("Por favor, preencha todos os campos!");
+    } catch (error) {
+      console.error(error);
+      setErrorMessage("Credenciais incorretas. Tente novamente.");
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -52,15 +68,15 @@ export default function Login() {
                 </p>
               </div>
 
-              <form className="space-y-6">
+              <form onSubmit={handleLogin} className="space-y-6">
                 <div className="space-y-2">
                   <label className="text-xs font-bold uppercase tracking-widest text-zinc-400">
                     Usuário
                   </label>
                   <input
-                    onChange={(e) => setEmail(e.target.value)}
-                    value={email}
-                    type="email"
+                    onChange={(e) => setUsername(e.target.value)}
+                    value={username}
+                    type="text"
                     placeholder="Usuario"
                     className="w-full bg-zinc-950 border border-zinc-800 rounded-xl px-4 py-4 outline-none focus:border-purple-500 focus:ring-1 focus:ring-purple-500 transition-all"
                   />
@@ -79,12 +95,18 @@ export default function Login() {
                   />
                 </div>
 
+                {errorMessage && (
+                  <p className="text-red-400 text-xs font-semibold text-center -mt-2">
+                    {errorMessage}
+                  </p>
+                )}
+
                 <button
-                  onClick={handleLogin}
-                  type="button"
+                  type="submit"
+                  disabled={isLoading}
                   className="w-full bg-gradient-to-r from-purple-600 to-purple-700 hover:from-purple-500 hover:to-purple-600 text-white font-bold py-4 rounded-xl shadow-lg shadow-purple-900/20 transition-all active:scale-95 uppercase tracking-widest text-sm"
                 >
-                  Entrar
+                  {isLoading ? "Entrando..." : "Entrar"}
                 </button>
 
                 <div className="flex justify-between items-center text-sm pt-4">

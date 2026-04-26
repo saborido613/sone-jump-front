@@ -1,28 +1,69 @@
 import { useNavigate } from "react-router-dom";
 import { useState } from "react";
+import { register as registerUser } from "../services/login/login";
 
 export default function Register() {
   const navigate = useNavigate();
   const [name, setName] = useState("");
+  const [username, setUsername] = useState("");
+  const [cpf, setCpf] = useState("");
+  const [phone, setPhone] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
+  const [errorMessage, setErrorMessage] = useState("");
 
-  const handleRegister = (e: React.FormEvent) => {
+  const formatCpf = (value: string) => {
+    return value
+      .replace(/\D/g, "")
+      .slice(0, 11)
+      .replace(/(\d{3})(\d)/, "$1.$2")
+      .replace(/(\d{3})(\d)/, "$1.$2")
+      .replace(/(\d{3})(\d{1,2})$/, "$1-$2");
+  };
+
+  const formatPhone = (value: string) => {
+    return value
+      .replace(/\D/g, "")
+      .slice(0, 11)
+      .replace(/(\d{2})(\d)/, "($1)$2")
+      .replace(/(\d{5})(\d{1,4})$/, "$1-$2");
+  };
+
+  const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
+    setErrorMessage("");
 
-    if (!name || !email || !password || !confirmPassword) {
-      alert("Por favor, preencha todos os campos.");
+    if (!name || !username || !cpf || !phone || !email || !password || !confirmPassword) {
+      setErrorMessage("Preencha todos os campos.");
       return;
     }
 
     if (password !== confirmPassword) {
-      alert("As senhas não coincidem!");
+      setErrorMessage("As senhas não coincidem.");
       return;
     }
 
-    console.log("Usuário cadastrado:", { name, email });
-    navigate("/login");
+    try {
+      setIsLoading(true);
+
+      await registerUser({
+        fullname: name,
+        username,
+        cpf: cpf.replace(/\D/g, ""),
+        phone: phone.replace(/\D/g, ""),
+        email,
+        password,
+      });
+
+      navigate("/login");
+    } catch (error) {
+      console.error(error);
+      setErrorMessage(error instanceof Error ? error.message : "Erro ao cadastrar usuário.");
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -53,7 +94,7 @@ export default function Register() {
             </p>
           </div>
 
-          <form className="space-y-5">
+          <form onSubmit={handleRegister} className="space-y-5">
             <div className="space-y-2">
               <label className="text-[10px] font-bold uppercase tracking-widest text-zinc-500">
                 Nome Completo
@@ -69,6 +110,19 @@ export default function Register() {
 
             <div className="space-y-2">
               <label className="text-[10px] font-bold uppercase tracking-widest text-zinc-500">
+                Username
+              </label>
+              <input
+                type="text"
+                value={username}
+                onChange={(e) => setUsername(e.target.value)}
+                placeholder="joaosilva"
+                className="w-full bg-[#050505] border border-zinc-800 rounded-2xl px-5 py-4 outline-none focus:border-purple-600 transition-all text-sm"
+              />
+            </div>
+
+            <div className="space-y-2">
+              <label className="text-[10px] font-bold uppercase tracking-widest text-zinc-500">
                 E-mail
               </label>
               <input
@@ -78,6 +132,34 @@ export default function Register() {
                 placeholder="seu@email.com"
                 className="w-full bg-[#050505] border border-zinc-800 rounded-2xl px-5 py-4 outline-none focus:border-purple-600 transition-all text-sm"
               />
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <label className="text-[10px] font-bold uppercase tracking-widest text-zinc-500">
+                  CPF
+                </label>
+                <input
+                  type="text"
+                  value={cpf}
+                  onChange={(e) => setCpf(formatCpf(e.target.value))}
+                  placeholder="000.000.000-00"
+                  className="w-full bg-[#050505] border border-zinc-800 rounded-2xl px-5 py-4 outline-none focus:border-purple-600 transition-all text-sm"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <label className="text-[10px] font-bold uppercase tracking-widest text-zinc-500">
+                  Telefone
+                </label>
+                <input
+                  type="text"
+                  value={phone}
+                  onChange={(e) => setPhone(formatPhone(e.target.value))}
+                  placeholder="(00)00000-0000"
+                  className="w-full bg-[#050505] border border-zinc-800 rounded-2xl px-5 py-4 outline-none focus:border-purple-600 transition-all text-sm"
+                />
+              </div>
             </div>
 
             <div className="grid grid-cols-2 gap-4">
@@ -107,12 +189,18 @@ export default function Register() {
               </div>
             </div>
 
+            {errorMessage && (
+              <p className="text-red-400 text-xs font-semibold text-center -mt-2">
+                {errorMessage}
+              </p>
+            )}
+
             <button
-              type="button"
-              onClick={handleRegister}
+              type="submit"
+              disabled={isLoading}
               className="w-full bg-purple-600 hover:bg-purple-500 text-white font-black py-5 rounded-2xl mt-4 transition-all active:scale-[0.98] uppercase tracking-widest text-xs shadow-lg shadow-purple-900/20"
             >
-              Criar minha conta
+              {isLoading ? "Criando conta..." : "Criar minha conta"}
             </button>
 
             <p className="text-center text-sm pt-6 text-zinc-500">
